@@ -343,8 +343,11 @@ class FusedMoEWithLoRA(BaseLayerWithLoRA):
         index: int,
         lora_a: torch.Tensor | list[torch.Tensor],
         lora_b: torch.Tensor | list[torch.Tensor],
+        lora_magnitude_vector: torch.Tensor | None = None,
     ):
         """Overwrites lora tensors at index."""
+        if lora_magnitude_vector is not None:
+            raise NotImplementedError("DoRA is not supported for fused MoE LoRA.")
         # Make mypy happy
         assert isinstance(lora_a, list)
         assert isinstance(lora_b, list)
@@ -529,8 +532,11 @@ class FusedMoE3DWithLoRA(FusedMoEWithLoRA):
         index: int,
         lora_a: torch.Tensor | list[torch.Tensor],
         lora_b: torch.Tensor | list[torch.Tensor],
+        lora_magnitude_vector: torch.Tensor | None = None,
     ):
         """Overwrites lora tensors at index."""
+        if lora_magnitude_vector is not None:
+            raise NotImplementedError("DoRA is not supported for fused MoE LoRA.")
         # Make mypy happy
         assert isinstance(lora_a, list)
         assert isinstance(lora_b, list)
