@@ -199,6 +199,35 @@ def test_load_dora_tensors(disable_lora_pin_memory):
 
 
 @pytest.mark.skip_global_cleanup
+def test_load_qwen25_05b_dora_checkpoint(
+    qwen25_05b_dora_files,
+    disable_lora_pin_memory,
+):
+    peft_helper = PEFTHelper.from_local_dir(
+        qwen25_05b_dora_files, max_position_embeddings=4096
+    )
+    assert peft_helper.use_dora
+    assert peft_helper.r == 16
+    expected_lora_modules = {"k_proj", "o_proj", "q_proj", "v_proj"}
+    assert set(peft_helper.target_modules) == expected_lora_modules
+
+    lora_model = LoRAModel.from_local_checkpoint(
+        qwen25_05b_dora_files,
+        expected_lora_modules,
+        peft_helper=peft_helper,
+        lora_model_id=1,
+        device="cpu",
+    )
+
+    assert lora_model.loras
+    assert lora_model.rank == peft_helper.r
+    for lora in lora_model.loras.values():
+        assert lora.use_dora
+        assert isinstance(lora.lora_magnitude_vector, torch.Tensor)
+        assert lora.lora_magnitude_vector.shape == (lora.lora_b.shape[0],)
+
+
+@pytest.mark.skip_global_cleanup
 def test_load_lora_tensors_rejects_unconfigured_dora_magnitude(
     disable_lora_pin_memory,
 ):
