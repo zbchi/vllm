@@ -343,7 +343,9 @@ class FusedMoEWithLoRA(BaseLayerWithLoRA):
         index: int,
         lora_a: torch.Tensor | list[torch.Tensor],
         lora_b: torch.Tensor | list[torch.Tensor],
-        lora_magnitude_vector: torch.Tensor | None = None,
+        lora_magnitude_vector: (
+            torch.Tensor | list[torch.Tensor | None] | None
+        ) = None,
     ):
         """Overwrites lora tensors at index."""
         if lora_magnitude_vector is not None:
@@ -532,7 +534,9 @@ class FusedMoE3DWithLoRA(FusedMoEWithLoRA):
         index: int,
         lora_a: torch.Tensor | list[torch.Tensor],
         lora_b: torch.Tensor | list[torch.Tensor],
-        lora_magnitude_vector: torch.Tensor | None = None,
+        lora_magnitude_vector: (
+            torch.Tensor | list[torch.Tensor | None] | None
+        ) = None,
     ):
         """Overwrites lora tensors at index."""
         if lora_magnitude_vector is not None:
