@@ -336,3 +336,32 @@ async def test_invalid_dora_adapter_does_not_break_loaded_dora(
     model_ids = {model.id for model in models.data}
     for idx in range(3):
         assert f"invalid-dora-{idx}" not in model_ids
+
+
+@pytest.mark.asyncio
+async def test_unconfigured_dora_magnitude_does_not_break_loaded_dora(
+    client: openai.AsyncOpenAI,
+    tmp_path,
+    qwen25_05b_dora_files,
+):
+    invalid_files = tmp_path / "invalid_dora_unconfigured_magnitude"
+    shutil.copytree(qwen25_05b_dora_files, invalid_files)
+
+    config_path = invalid_files / "adapter_config.json"
+    with config_path.open(encoding="utf-8") as f:
+        adapter_config = json.load(f)
+    adapter_config["use_dora"] = False
+    with config_path.open("w", encoding="utf-8") as f:
+        json.dump(adapter_config, f)
+
+    adapter_name = "invalid-dora-unconfigured-magnitude"
+    with pytest.raises(openai.InternalServerError, match="use_dora=False"):
+        await client.post(
+            "load_lora_adapter",
+            cast_to=str,
+            body={"lora_name": adapter_name, "lora_path": str(invalid_files)},
+        )
+
+    await _complete_text(client, DORA_ADAPTER_NAME)
+    models = await client.models.list()
+    assert adapter_name not in {model.id for model in models.data}
